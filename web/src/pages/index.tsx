@@ -671,42 +671,52 @@ export default function Home() {
       {/* 채팅 패널이 상시 고정(360px + 여백)이라 그만큼 항상 비켜 준다 */}
       <div className="pointer-events-none absolute bottom-0 left-0 right-[372px] z-20 p-3">
         <div className="glass glass-live pointer-events-auto mx-auto max-w-4xl px-4 py-3">
-          {/* 모드 탭 — 항상 보인다. 예전에는 '시간대별 상세'가 우측 끝 작은
-              버튼이라 이 시스템의 본론인 시계열 예측이 숨어 보였다. */}
-          <div className="mb-2 flex items-center gap-1 border-b border-white/10 pb-2">
+          {/* 모드 탭 — 테두리와 배경을 줘서 "누를 수 있는 것"으로 보이게 한다.
+              전에는 글자만 있어 버튼인지 라벨인지 구분이 안 됐다. */}
+          <div className="mb-2 flex items-center gap-2 border-b border-white/10 pb-2">
             <button
               onClick={() => {
                 setPlaying(false);
                 setDetail(false);
               }}
+              aria-pressed={!detail}
               className={
-                "rounded-lg px-3 py-1.5 text-[11px] font-medium transition " +
-                (!detail ? "bg-white/15 text-white" : "text-slate-400 hover:bg-white/5")
+                "rounded-lg border px-3 py-1.5 text-[11px] font-medium transition " +
+                (!detail
+                  ? "border-white/25 bg-white/15 text-white shadow-sm"
+                  : "border-white/10 bg-white/[0.04] text-slate-300 hover:border-white/25 hover:bg-white/10")
               }
             >
               전 기간 {tl?.days.length ?? 0}일
             </button>
-            <button
-              onClick={() => td?.c === 1 && setDetail(true)}
-              disabled={td?.c !== 1}
-              title={td?.c === 1 ? "" : "이 날은 시간대별 자산이 없습니다. 눈금이 있는 날을 고르세요."}
-              className={
-                "rounded-lg px-3 py-1.5 text-[11px] font-medium transition " +
-                (detail
-                  ? "bg-accent/70 text-white"
-                  : td?.c === 1
-                    ? "text-accent hover:bg-accent/15"
-                    : "cursor-not-allowed text-slate-600")
-              }
-            >
-              ⏱ 시간대별 예측
-            </button>
+
+            {/* 이 날에 시간대별 자산이 있으면 버튼을 살려 두고, 없으면 왜 못 누르는지
+                버튼 자리에 그대로 적는다. 비활성 버튼만 두면 고장으로 읽힌다. */}
+            {detail || td?.c === 1 ? (
+              <button
+                onClick={() => setDetail(true)}
+                aria-pressed={detail}
+                className={
+                  "rounded-lg border px-3 py-1.5 text-[11px] font-medium transition " +
+                  (detail
+                    ? "border-accent/60 bg-accent/70 text-white shadow-sm"
+                    : "border-accent/60 bg-accent/15 text-accent hover:bg-accent/30")
+                }
+              >
+                ⏱ 시간대별 예측{!detail && " 보기 →"}
+              </button>
+            ) : (
+              <span className="rounded-lg border border-dashed border-white/10 px-3 py-1.5 text-[11px] text-slate-500">
+                ⏱ 시간대별 예측 — 이 날은 없음
+              </span>
+            )}
+
             <span className="ml-auto text-[10px] text-slate-500">
               {detail
                 ? "t+1h · t+2h · t+3h 를 시각마다 새로 산출합니다"
                 : td?.c === 1
-                  ? "이 날은 시간대별로 볼 수 있습니다"
-                  : `사례 ${root.days.length}일은 시간대별로 볼 수 있습니다`}
+                  ? "이 날은 06~18시를 시각별로 볼 수 있습니다"
+                  : `아래 띠의 파란 눈금(사례 ${root.days.length}일)을 누르면 열립니다`}
             </span>
           </div>
           {detail ? (
